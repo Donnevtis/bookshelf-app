@@ -1,0 +1,23 @@
+{
+  "g5gh54": {
+    "id": "g5gh54",
+    "title": "Профессиональный TypeScript. Разработка масштабируемых JavaScript-приложений",
+    "author": "Дэвид Сойер Макфарланд",
+    "year": "2021",
+    "cover": "https://cdn1.ozone.ru/s3/multimedia-d/wc250/6026204701.jpg"
+  },
+  "5g432": {
+    "id": "5g432",
+    "title": "JavaScript. Полное руководство",
+    "author": "Флэнаган Дэвид",
+    "year": "2021",
+    "cover": "https://cdn1.ozone.ru/s3/multimedia-d/wc1200/6029228593.jpg"
+  },
+  "5g432fg": {
+    "id": "5g432fg",
+    "title": "Параллельные и высокопроизводительные вычисления",
+    "author": "Роби Роберт, Замора Джулиана",
+    "year": "2022",
+    "cover": "https://cdn1.ozone.ru/s3/multimedia-b/wc200/6135878447.jpg"
+  }
+}
