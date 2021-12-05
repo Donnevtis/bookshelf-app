@@ -17,7 +17,7 @@ export default book => {
         <div class="book__info">
             <h2 class="book__title">${title}</h2>
             <p class="book__author">${author || ''}</p>
-            <p class="book__year">${year || ''}<span>г.</span></p>
+            <p class="book__year">${year ? year + 'г.' : ''}</p>
         </div>
         </div>
         <div class="book__controls">

@@ -40,6 +40,7 @@ class Books {
   }
   #updateStorage() {
     localStorage.setItem('booksDataList', JSON.stringify(this.books));
+
     // clear the localStorage if there are no more books
     if (!Object.keys(this.#getBooksFromStorage()).length) localStorage.clear();
   }
@@ -51,8 +52,8 @@ class UI {
     template.innerHTML = str;
     return template.content;
   }
-  scrollTo(el) {
-    setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 400);
+  scrollTo(el, timout = 300) {
+    setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), timout);
   }
 }
 
@@ -98,7 +99,6 @@ class BookEditor extends UI {
   validation() {
     const invalid = new Set();
     const isEmpty = v => !v.length;
-    const maxLength = n => v => v.length > n;
     const maxYear = n => v => +v > n;
     const onlyNumber = v => !/^\d+$/.test(v);
 
@@ -115,8 +115,18 @@ class BookEditor extends UI {
     };
 
     Object.values(this.fields).forEach(field => {
-      const validators = [isEmpty];
-      if (field.name === 'year') validators.push(maxLength(4), maxYear(2017), onlyNumber);
+      const validators = [];
+
+      switch (field.name) {
+        case 'year':
+          validators.push(maxYear(2017), onlyNumber);
+          break;
+        case 'title':
+        case 'author':
+          validators.push(isEmpty);
+          break;
+      }
+
       validate(field, validators);
       field.addEventListener('input', e => validate(e.target, validators));
     });
@@ -125,7 +135,7 @@ class BookEditor extends UI {
     this.node.classList.remove('editor-wrapper_show');
     setTimeout(() => {
       this.node.remove();
-    }, 500);
+    }, 400);
   }
 }
 
@@ -138,11 +148,9 @@ class List extends UI {
     super();
     this.books = books;
   }
-
   createBook(b) {
     return this.createHTML(bookTemplate(b));
   }
-
   createBooklist(books) {
     books.forEach(book => {
       this.addBookToList(book);
@@ -155,10 +163,8 @@ class List extends UI {
     const cover = newBook.querySelector('img');
     scroll && this.scrollTo(newBook);
 
-    cover.onerror = () => {
-      cover.src = coverPlaceholder;
-      cover.onerror = () => {};
-    };
+    //set placeholder in case of an invalid link
+    List.setCoverPlaceholder(cover);
   }
   addNewBook(bookData) {
     this.books.addBook(bookData);
@@ -170,11 +176,14 @@ class List extends UI {
     const author = bookItem.querySelector('.book__author');
     const year = bookItem.querySelector('.book__year');
 
-    title.innerHTML = book.title;
-    author.innerHTML = book.author;
-    year.firstChild.data = book.year;
+    title.textContent = book.title;
+    author.textContent = book.author;
+    year.textContent = book.year ? book.year + 'г.' : '';
     cover.src = book.cover;
 
+    //set placeholder in case of an invalid link
+    List.setCoverPlaceholder(cover);
+    this.scrollTo(bookItem, 500);
     this.books.editBook(id, book);
   }
   removeBook(id) {
@@ -189,6 +198,7 @@ class List extends UI {
       // this.closeEditor(id);
       return;
     }
+
     // inject form to list
     prevElem.after(bookEditor.form);
     bookEditor.node = document.querySelector(`[data-form-id="${id}"]`);
@@ -221,6 +231,12 @@ class List extends UI {
     this.editors[id].closeEditor();
     delete this.editors[id];
   }
+  static setCoverPlaceholder = e => {
+    e.onerror = () => {
+      e.src = coverPlaceholder;
+      e.onerror = () => {};
+    };
+  };
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -228,6 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const list = new List(books);
 
   list.createBooklist(Object.values(books.books));
+
   //handle booklist evenst
   list.bookList.addEventListener('click', ({ target }) => {
     const id = target.dataset?.id;
@@ -238,6 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
       list.openEditor(id, books.getBook(id));
     }
   });
+
   //add new book
   document.querySelector('.add-btn').addEventListener('click', () => list.openCreator());
 });
