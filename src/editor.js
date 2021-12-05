@@ -1,6 +1,6 @@
 export default (id = '0', { tag = 'section', title = 'Добавление книги' }, book = {}) => `
 <${tag} class="content editor-wrapper" data-form-id='${id}'>
-  <form action="#" id="book-editor" class="editor">
+  <form action="#" id="book-editor"  class="editor">
     <fieldset name="bookFields">
       <legend class="editor__title">${title}</legend>
       <div class="editor__item">
@@ -25,7 +25,7 @@ export default (id = '0', { tag = 'section', title = 'Добавление кн�
         <label class="editor__label" for="book-year"> Год выпуска </label>
         <input
           class="editor__input"
-          type="number" name="year"
+          type="text" name="year"
           id="book-year"
           value="${book.year || ''}"
         />

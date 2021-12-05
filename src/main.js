@@ -1,7 +1,7 @@
 import './scss/style.scss';
 import editorTemplate from './editor';
 import bookTemplate from './book';
-import initBooks from './books.json';
+import initBooks from './assets/books.json';
 import { nanoid } from 'nanoid';
 import coverPlaceholder from './assets/book-cover-placeholder.png';
 
@@ -29,7 +29,6 @@ class Books {
     this.#updateStorage();
   }
   removeBook(id) {
-    console.log(this.books[id], id);
     if (this.books[id]) delete this.books[id];
     this.#updateStorage();
   }
@@ -52,6 +51,9 @@ class UI {
     template.innerHTML = str;
     return template.content;
   }
+  scrollTo(el) {
+    setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 400);
+  }
 }
 
 class BookEditor extends UI {
@@ -70,6 +72,10 @@ class BookEditor extends UI {
     this.form = this.createHTML(editorTemplate(id, kind, book));
   }
   set node(elem) {
+    // start animation and scroll
+    setTimeout(() => elem.classList.add('editor-wrapper_show'), 0);
+    this.scrollTo(elem);
+
     const fieldset = elem.querySelector('fieldset');
     const { title, author, year, cover, save } = fieldset.elements;
     this.HTMLnode = elem;
@@ -79,7 +85,7 @@ class BookEditor extends UI {
   get node() {
     return this.HTMLnode;
   }
-  //get clear values from HTML elements
+  //get values from HTML elements
   get bookData() {
     return Object.fromEntries(Object.entries(this.fields).map(([_, { value }]) => [_, value]));
   }
@@ -94,6 +100,7 @@ class BookEditor extends UI {
     const isEmpty = v => !v.length;
     const maxLength = n => v => v.length > n;
     const maxYear = n => v => +v > n;
+    const onlyNumber = v => !/^\d+$/.test(v);
 
     const validate = (target, validators) => {
       if (validators.find(v => v(target.value))) {
@@ -109,22 +116,29 @@ class BookEditor extends UI {
 
     Object.values(this.fields).forEach(field => {
       const validators = [isEmpty];
-      if (field.name === 'year')
-        validators.push(maxLength(4), maxYear(new Date().getFullYear() + 2));
+      if (field.name === 'year') validators.push(maxLength(4), maxYear(2017), onlyNumber);
       validate(field, validators);
       field.addEventListener('input', e => validate(e.target, validators));
     });
   }
+  closeEditor() {
+    this.node.classList.remove('editor-wrapper_show');
+    setTimeout(() => {
+      this.node.remove();
+    }, 500);
+  }
 }
 
 class List extends UI {
+  editors = {};
+  bookList = document.getElementById('book-list');
+  stub = document.querySelector('.book-wrapper').firstChild;
+
   constructor(books) {
     super();
     this.books = books;
   }
-  editors = {};
-  bookList = document.getElementById('book-list');
-  stub = document.getElementById('stub');
+
   createBook(b) {
     return this.createHTML(bookTemplate(b));
   }
@@ -134,15 +148,21 @@ class List extends UI {
       this.addBookToList(book);
     });
   }
-  addBookToList(book) {
-    const bookNode = this.createBook(book);
+  addBookToList(bookData, scroll = false) {
+    const bookNode = this.createBook(bookData);
     this.bookList.append(bookNode);
-    const cover = this.bookList.lastChild.querySelector('img');
-    cover.onerror = () => (cover.src = coverPlaceholder);
+    const newBook = this.bookList.lastChild;
+    const cover = newBook.querySelector('img');
+    scroll && this.scrollTo(newBook);
+
+    cover.onerror = () => {
+      cover.src = coverPlaceholder;
+      cover.onerror = () => {};
+    };
   }
-  addNewBook(...args) {
-    this.books.addBook(...args);
-    this.addBookToList(...args);
+  addNewBook(bookData) {
+    this.books.addBook(bookData);
+    this.addBookToList(bookData, true);
   }
   editBook(id, book, bookItem) {
     const cover = bookItem.querySelector('.book__cover img');
@@ -169,16 +189,16 @@ class List extends UI {
       // this.closeEditor(id);
       return;
     }
-
     // inject form to list
     prevElem.after(bookEditor.form);
     bookEditor.node = document.querySelector(`[data-form-id="${id}"]`);
-    // start animation
-    setTimeout(() => bookEditor.node.classList.add('editor-wrapper_show'), 0);
 
     bookEditor.node.addEventListener('click', e => {
       e.preventDefault();
-      if (e.target.type === 'reset') this.closeEditor(id);
+
+      if (e.target.type === 'reset') {
+        this.closeEditor(id);
+      }
       if (e.target.type === 'submit') {
         if (!bookEditor.valideChanges()) return;
         this.closeEditor(id);
@@ -187,21 +207,19 @@ class List extends UI {
       }
     });
 
-    this.editors[id] = bookEditor.node;
-  }
-  closeEditor(id) {
-    this.editors[id].classList.remove('editor-wrapper_show');
-    setTimeout(() => {
-      this.editors[id].remove();
-      delete this.editors[id];
-    }, 500);
+    this.editors[id] = bookEditor;
   }
   openCreator() {
     const id = '0';
+    console.log(this.stub);
     this.inject(id, new BookEditor(id, CREATOR), this.stub);
   }
   openEditor(id, book) {
     this.inject(id, new BookEditor(id, EDITOR, book), document.getElementById(id));
+  }
+  closeEditor(id) {
+    this.editors[id].closeEditor();
+    delete this.editors[id];
   }
 }
 
