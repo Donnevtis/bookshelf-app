@@ -1,4 +1,4 @@
-import coverPlaceholder from './assets/book-cover-placeholder.png';
+const coverPlaceholder = new URL('./assets/book-cover-placeholder.png', import.meta.url).href;
 
 export default book => {
   const { id, title, author, year, cover } = book;

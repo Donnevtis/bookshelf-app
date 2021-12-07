@@ -1,15 +1,31 @@
 {
   "name": "bookshelf",
-  "version": "0.1.0",
+  "version": "0.0.1",
+  "description": "test app bookshelf",
+  "main": "./src/index.js",
+  "license": "MIT",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "serve": "vite preview"
+    "build": "webpack --node-env production",
+    "dev": "webpack-dev-server",
+    "serve": "webpack serve --open"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.0",
+    "@babel/core": "^7.16.0",
+    "@babel/eslint-parser": "^7.16.3",
+    "@babel/preset-env": "^7.16.4",
+    "babel-loader": "^8.2.3",
+    "clean-webpack-plugin": "^4.0.0",
+    "copy-webpack-plugin": "^10.0.0",
+    "css-loader": "^6.5.1",
+    "html-webpack-plugin": "^5.5.0",
+    "loader": "^2.1.1",
+    "mini-css-extract-plugin": "^2.4.5",
     "sass": "^1.44.0",
-    "vite": "^2.6.4"
+    "sass-loader": "^12.3.0",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.64.4",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.6.0"
   },
   "dependencies": {
     "nanoid": "^3.1.30"

@@ -3,8 +3,8 @@ import editorTemplate from './editor';
 import bookTemplate from './book';
 import initBooks from './assets/books.json';
 import { nanoid } from 'nanoid';
-import coverPlaceholder from './assets/book-cover-placeholder.png';
 
+const coverPlaceholder = new URL('./assets/book-cover-placeholder.png', import.meta.url).href;
 const EDITOR = {
   title: 'Редактивание книги',
   tag: 'li',
